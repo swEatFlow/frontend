@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로필 설정</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>tailwind.config={theme:{extend:{colors:{primary:'#4F46E5',secondary:'#8B5CF6'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" rel="stylesheet">
+    <style>
+        :where([class^="ri-"])::before { content: "\f3c2"; }
+        body {
+            font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: #e2e8f0;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4F46E5;
+            cursor: pointer;
+        }
+        .radio-input {
+            position: absolute;
+            opacity: 0;
+        }
+        .activity-card input:checked + .card-content,
+        .goal-card input:checked + .card-content {
+            border-color: #4F46E5;
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+        .activity-card input:checked + .card-content .check-icon,
+        .goal-card input:checked + .card-content .check-icon {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- 상단 네비게이션 바 -->
+    <nav class="fixed top-0 w-full bg-white shadow-sm z-10">
+        <div class="flex items-center justify-between px-4 py-4">
+            <div class="flex items-center">
+                <button class="w-10 h-10 flex items-center justify-center mr-2 cursor-pointer">
+                    <i class="ri-arrow-left-s-line ri-xl text-gray-700"></i>
+                </button>
+                <h1 class="text-lg font-semibold">프로필 설정</h1>
+            </div>
+            <div class="font-['Pacifico'] text-primary text-xl">logo</div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="pt-20 pb-24 px-4">
+        <form id="profileForm">
+            <!-- 기본 정보 섹션 -->
+            <section class="mb-8">
+                <h2 class="text-lg font-semibold mb-4">기본 정보</h2>
+                <div class="bg-gray-50 rounded-lg p-5 shadow-sm">
+                    <!-- 나이 입력 -->
+                    <div class="mb-5">
+                        <label for="age" class="block text-sm font-medium text-gray-700 mb-1">나이 <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <input type="number" id="age" name="age" class="w-full px-4 py-3 border border-gray-200 rounded focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="나이를 입력해주세요" required>
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">세</div>
+                        </div>
+                    </div>
+
+                    <!-- 성별 선택 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">성별 <span class="text-red-500">*</span></label>
+                        <div class="flex gap-4">
+                            <label class="relative flex-1 cursor-pointer">
+                                <input type="radio" name="gender" value="male" class="radio-input" required>
+                                <div class="flex items-center justify-center py-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition">
+                                    <i class="ri-men-line ri-lg mr-2 text-blue-500"></i>
+                                    <span>남성</span>
+                                </div>
+                            </label>
+                            <label class="relative flex-1 cursor-pointer">
+                                <input type="radio" name="gender" value="female" class="radio-input">
+                                <div class="flex items-center justify-center py-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition">
+                                    <i class="ri-women-line ri-lg mr-2 text-pink-500"></i>
+                                    <span>여성</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 활동량 섹션 -->
+            <section class="mb-8">
+                <h2 class="text-lg font-semibold mb-4">활동량 <span class="text-red-500">*</span></h2>
+                <div class="space-y-3">
+                    <!-- 높은 활동량 -->
+                    <label class="activity-card block cursor-pointer">
+                        <input type="radio" name="activity" value="high" class="radio-input" required>
+                        <div class="card-content relative flex items-center p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition">
+                            <div class="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-full mr-4">
+                                <i class="ri-run-line ri-xl text-primary"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">높음</h3>
+                                <p class="text-sm text-gray-500">주 5-7일 운동, 활발한 생활 패턴</p>
+                            </div>
+                            <div class="check-icon hidden absolute right-4 top-4 w-6 h-6 bg-primary rounded-full items-center justify-center text-white">
+                                <i class="ri-check-line"></i>
+                            </div>
+                        </div>
+                    </label>
+                    <!-- 중간 활동량 -->
+                    <label class="activity-card block cursor-pointer">
+                        <input type="radio" name="activity" value="medium" class="radio-input">
+                        <div class="card-content relative flex items-center p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition">
+                            <div class="w-12 h-12 flex items-center justify-center bg-green-100 rounded-full mr-4">
+                                <i class="ri-walk-line ri-xl text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">중간</h3>
+                                <p class="text-sm text-gray-500">주 3-4일 운동, 보통의 활동량</p>
+                            </div>
+                            <div class="check-icon hidden absolute right-4 top-4 w-6 h-6 bg-primary rounded-full items-center justify-center text-white">
+                                <i class="ri-check-line"></i>
+                            </div>
+                        </div>
+                    </label>
+                    <!-- 낮은 활동량 -->
+                    <label class="activity-card block cursor-pointer">
+                        <input type="radio" name="activity" value="low" class="radio-input">
+                        <div class="card-content relative flex items-center p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition">
+                            <div class="w-12 h-12 flex items-center justify-center bg-orange-100 rounded-full mr-4">
+                                <i class="ri-rest-time-line ri-xl text-orange-500"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">낮음</h3>
+                                <p class="text-sm text-gray-500">주 0-2일 운동, 좌식 생활 위주</p>
+                            </div>
+                            <div class="check-icon hidden absolute right-4 top-4 w-6 h-6 bg-primary rounded-full items-center justify-center text-white">
+                                <i class="ri-check-line"></i>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- 목표 설정 섹션 -->
+            <section class="mb-8">
+                <h2 class="text-lg font-semibold mb-4">목표 설정 <span class="text-red-500">*</span></h2>
+                <div class="grid grid-cols-1 gap-3">
+                    <!-- 체중 감량 -->
+                    <label class="goal-card block cursor-pointer">
+                        <input type="radio" name="goal" value="weight_loss" class="radio-input" required>
+                        <div class="card-content relative flex items-center p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition">
+                            <div class="w-12 h-12 flex items-center justify-center bg-blue-100 rounded-full mr-4">
+                                <i class="ri-scales-3-line ri-xl text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">체중 감량</h3>
+                                <p class="text-sm text-gray-500">건강한 식습관과 운동으로 체중 감소</p>
+                            </div>
+                            <div class="check-icon hidden absolute right-4 top-4 w-6 h-6 bg-primary rounded-full items-center justify-center text-white">
+                                <i class="ri-check-line"></i>
+                            </div>
+                        </div>
+                    </label>
+                    <!-- 근육량 증가 -->
+                    <label class="goal-card block cursor-pointer">
+                        <input type="radio" name="goal" value="muscle_gain" class="radio-input">
+                        <div class="card-content relative flex items-center p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition">
+                            <div class="w-12 h-12 flex items-center justify-center bg-green-100 rounded-full mr-4">
+                                <i class="ri-boxing-line ri-xl text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">근육량 증가</h3>
+                                <p class="text-sm text-gray-500">단백질 섭취와 근력 운동으로 근육 발달</p>
+                            </div>
+                            <div class="check-icon hidden absolute right-4 top-4 w-6 h-6 bg-primary rounded-full items-center justify-center text-white">
+                                <i class="ri-check-line"></i>
+                            </div>
+                        </div>
+                    </label>
+                    <!-- 체형 유지 -->
+                    <label class="goal-card block cursor-pointer">
+                        <input type="radio" name="goal" value="maintain" class="radio-input">
+                        <div class="card-content relative flex items-center p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition">
+                            <div class="w-12 h-12 flex items-center justify-center bg-purple-100 rounded-full mr-4">
+                                <i class="ri-heart-pulse-line ri-xl text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium">체형 유지</h3>
+                                <p class="text-sm text-gray-500">현재 체형을 유지하며 건강 관리</p>
+                            </div>
+                            <div class="check-icon hidden absolute right-4 top-4 w-6 h-6 bg-primary rounded-full items-center justify-center text-white">
+                                <i class="ri-check-line"></i>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            <!-- 질병 정보 섹션 -->
+            <section class="mb-8">
+                <h2 class="text-lg font-semibold mb-4">질병 정보</h2>
+                <div class="bg-gray-50 rounded-lg p-5 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-3">관련 질병이 있다면 선택해주세요. 맞춤 식단 추천에 활용됩니다.</p>
+                    
+                    <div class="relative mb-4">
+                        <div class="flex items-center border border-gray-200 rounded-lg bg-white px-3 py-2">
+                            <i class="ri-search-line ri-lg text-gray-400 mr-2"></i>
+                            <input type="text" id="diseaseSearch" class="w-full outline-none text-sm" placeholder="질병을 검색하세요">
+                        </div>
+                    </div>
+
+                    <div id="selectedDiseases" class="flex flex-wrap gap-2 mb-4"></div>
+                    <div class="text-sm font-medium mb-2">일반적인 질병</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" class="disease-chip px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-gray-50 cursor-pointer" data-disease="당뇨병">당뇨병</button>
+                        <button type="button" class="disease-chip px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-gray-50 cursor-pointer" data-disease="고혈압">고혈압</button>
+                        <button type="button" class="disease-chip px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-gray-50 cursor-pointer" data-disease="고지혈증">고지혈증</button>
+                        <button type="button" class="disease-chip px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-gray-50 cursor-pointer" data-disease="위장질환">위장질환</button>
+                        <button type="button" class="disease-chip px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-gray-50 cursor-pointer" data-disease="관절염">관절염</button>
+                        <button type="button" class="disease-chip px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm hover:bg-gray-50 cursor-pointer" data-disease="갑상선질환">갑상선질환</button>
+                    </div>
+                    <input type="hidden" id="diseases" name="diseases" value="">
+                </div>
+            </section>
+
+            <!-- 라이프스타일 섹션 -->
+            <section class="mb-8">
+                <h2 class="text-lg font-semibold mb-4">라이프스타일</h2>
+                <div class="bg-gray-50 rounded-lg p-5 shadow-sm">
+                    <!-- 식사 준비 시간 -->
+                    <div class="mb-6">
+                        <label for="mealPrepTime" class="block text-sm font-medium text-gray-700 mb-2">식사 준비 가능 시간</label>
+                        <div class="mb-2">
+                            <input type="range" id="mealPrepTime" name="mealPrepTime" min="5" max="60" step="5" value="30" class="w-full">
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>5분</span>
+                            <span id="mealPrepTimeValue">30분</span>
+                            <span>60분</span>
+                        </div>
+                    </div>
+
+                    <!-- 외식 빈도 -->
+                    <div>
+                        <label for="eatingOutFrequency" class="block text-sm font-medium text-gray-700 mb-2">주간 외식 빈도</label>
+                        <div class="relative">
+                            <select id="eatingOutFrequency" name="eatingOutFrequency" class="w-full px-4 py-3 border border-gray-200 rounded appearance-none focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-white">
+                                <option value="0">거의 없음</option>
+                                <option value="1-2">주 1-2회</option>
+                                <option value="3-4" selected>주 3-4회</option>
+                                <option value="5-6">주 5-6회</option>
+                                <option value="7+">매일</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                <i class="ri-arrow-down-s-line text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </form>
+    </main>
+
+    <!-- 하단 버튼 -->
+    <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 p-4">
+        <button type="submit" form="profileForm" class="w-full py-3.5 bg-primary text-white font-medium rounded-button shadow-sm hover:bg-primary/90 transition cursor-pointer">
+            프로필 저장하기
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 식사 준비 시간 슬라이더
+            const mealPrepTime = document.getElementById('mealPrepTime');
+            const mealPrepTimeValue = document.getElementById('mealPrepTimeValue');
+            
+            mealPrepTime.addEventListener('input', function() {
+                mealPrepTimeValue.textContent = this.value + '분';
+            });
+
+            // 질병 선택 기능
+            const selectedDiseases = new Set();
+            const diseaseChips = document.querySelectorAll('.disease-chip');
+            const selectedDiseasesContainer = document.getElementById('selectedDiseases');
+            const diseasesInput = document.getElementById('diseases');
+            const diseaseSearch = document.getElementById('diseaseSearch');
+
+            function updateSelectedDiseases() {
+                selectedDiseasesContainer.innerHTML = '';
+                diseasesInput.value = Array.from(selectedDiseases).join(',');
+                
+                selectedDiseases.forEach(disease => {
+                    const chip = document.createElement('div');
+                    chip.className = 'flex items-center bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm';
+                    chip.innerHTML = `
+                        <span>${disease}</span>
+                        <button type="button" class="ml-1.5 w-4 h-4 flex items-center justify-center rounded-full bg-primary/20 hover:bg-primary/30" data-disease="${disease}">
+                            <i class="ri-close-line ri-xs text-primary"></i>
+                        </button>
+                    `;
+                    selectedDiseasesContainer.appendChild(chip);
+                    
+                    chip.querySelector('button').addEventListener('click', function() {
+                        const disease = this.getAttribute('data-disease');
+                        selectedDiseases.delete(disease);
+                        updateSelectedDiseases();
+                        
+                        // 해당 질병 칩의 선택 상태 업데이트
+                        diseaseChips.forEach(chip => {
+                            if (chip.getAttribute('data-disease') === disease) {
+                                chip.classList.remove('bg-primary/10', 'text-primary', 'border-primary');
+                                chip.classList.add('bg-white', 'border-gray-200');
+                            }
+                        });
+                    });
+                });
+            }
+
+            diseaseChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    const disease = this.getAttribute('data-disease');
+                    
+                    if (selectedDiseases.has(disease)) {
+                        selectedDiseases.delete(disease);
+                        this.classList.remove('bg-primary/10', 'text-primary', 'border-primary');
+                        this.classList.add('bg-white', 'border-gray-200');
+                    } else {
+                        selectedDiseases.add(disease);
+                        this.classList.remove('bg-white', 'border-gray-200');
+                        this.classList.add('bg-primary/10', 'text-primary', 'border-primary');
+                    }
+                    
+                    updateSelectedDiseases();
+                });
+            });
+
+            // 질병 검색 및 추가
+            diseaseSearch.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim() !== '') {
+                    e.preventDefault();
+                    const disease = this.value.trim();
+                    selectedDiseases.add(disease);
+                    updateSelectedDiseases();
+                    this.value = '';
+                }
+            });
+
+            // 폼 제출
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 폼 데이터 수집
+                const formData = new FormData(this);
+                const profileData = {};
+                
+                for (const [key, value] of formData.entries()) {
+                    profileData[key] = value;
+                }
+                
+                // 질병 정보 추가
+                profileData.diseases = Array.from(selectedDiseases);
+                
+                // 여기서 데이터를 서버로 전송하거나 로컬에 저장할 수 있습니다
+                console.log('프로필 데이터:', profileData);
+                
+                // 성공 메시지 표시
+                const successMessage = document.createElement('div');
+                successMessage.className = 'fixed inset-0 flex items-center justify-center bg-black/50 z-50';
+                successMessage.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 max-w-xs w-full mx-4 shadow-xl">
+                        <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center bg-green-100 rounded-full">
+                            <i class="ri-check-line ri-2x text-green-600"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-center mb-2">프로필 저장 완료</h3>
+                        <p class="text-gray-500 text-center mb-6">프로필이 성공적으로 저장되었습니다.</p>
+                        <button class="w-full py-3 bg-primary text-white font-medium rounded-button shadow-sm">
+                            확인
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(successMessage);
+                
+                successMessage.querySelector('button').addEventListener('click', function() {
+                    successMessage.remove();
+                });
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 라디오 버튼 선택 시 시각적 표시
+            const radioInputs = document.querySelectorAll('.radio-input');
+            
+            radioInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const name = this.getAttribute('name');
+                    const sameNameInputs = document.querySelectorAll(`input[name="${name}"]`);
+                    
+                    sameNameInputs.forEach(input => {
+                        const cardContent = input.nextElementSibling;
+                        if (input.checked) {
+                            cardContent.classList.add('border-primary');
+                        } else {
+                            cardContent.classList.remove('border-primary');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
