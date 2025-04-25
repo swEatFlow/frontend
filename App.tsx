@@ -2,10 +2,7 @@ import React from 'react';
 import { StatusBar, SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from './src/screens/LoginScreen';
-import FindIdScreen from './src/screens/FindIdScreen';
-import SignUpScreen from './src/screens/SignUpScreen';
-import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
+import { LoginScreen, FindIdScreen, SignUpScreen, ResetPasswordScreen, Main } from './src/index';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +20,7 @@ function App(): React.JSX.Element {
           <Stack.Screen name="FindId" component={FindIdScreen} />
           <Stack.Screen name="SignUp" component={SignUpScreen} />
           <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+          <Stack.Screen name="Main" component={Main} />
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>

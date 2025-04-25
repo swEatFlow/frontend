@@ -169,13 +169,6 @@ const ResetPasswordScreen = () => {
                   {step === 1 ? '인증번호 받기' : step === 2 ? '다음' : '비밀번호 변경'}
                 </Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.loginLink}
-                onPress={handleGoToLogin}
-              >
-                <Text style={styles.loginLinkText}>로그인으로 돌아가기</Text>
-              </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.resultContainer}>

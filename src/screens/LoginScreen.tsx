@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  View,
-  Text,
-  StyleSheet,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
   TextInput,
   Image,
+  View,
+  Text,
+  StyleSheet,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -20,18 +22,35 @@ const { width } = Dimensions.get('window');
 
 const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    // 로그인 로직 구현
-    console.log('Login attempt with:', email, password);
+  const handleLogin = async () => {
+    try { // 안드로이드 AVD 전용 url
+      const response = await fetch('http://10.0.2.2:8000/api/v1/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, password }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        await AsyncStorage.setItem('access_token', data.access_token);
+        navigation.navigate('Main');
+      } else {
+        Alert.alert('로그인 실패', '이메일 또는 비밀번호가 올바르지 않습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류가 발생했습니다.');
+    }
   };
 
   return (
     <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.keyboardAvoidingView}
     >
       <View style={styles.content}>
         <View style={styles.header}>
@@ -44,26 +63,23 @@ const LoginScreen = () => {
 
         <View style={styles.formContainer}>
           <TextInput
-            placeholder="아이디를 입력해주세요"
-            value={email}
-            onChangeText={setEmail}
             style={styles.input}
+            placeholder="아이디를 입력해주세요"
+            value={id}
+            onChangeText={setId}
             keyboardType="email-address"
             autoCapitalize="none"
           />
 
           <TextInput
+            style={styles.input}
             placeholder="비밀번호를 입력해주세요"
             value={password}
             onChangeText={setPassword}
-            style={styles.input}
             secureTextEntry
           />
 
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin}
-          >
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
             <Text style={styles.loginButtonText}>로그인</Text>
           </TouchableOpacity>
 
@@ -92,7 +108,7 @@ const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  keyboardAvoidingView: {
+  container: {
     flex: 1,
   },
   content: {
@@ -110,14 +126,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    fontFamily: 'Pacifico_400Regular',
-    fontSize: 36,
-    color: '#000000',
     width: 50,
     height: 50,
   },
   logoText: {
-    fontFamily: 'Pacifico_400Regular',
     fontSize: 36,
     color: '#000000',
     marginLeft: 10,
@@ -183,4 +195,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen; 
+export default LoginScreen;

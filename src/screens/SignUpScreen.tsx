@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,15 +23,75 @@ const { width } = Dimensions.get('window');
 
 const SignUpScreen = () => {
   const navigation = useNavigation<SignUpScreenNavigationProp>();
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isIdAvailable, setIsIdAvailable] = useState<boolean | null>(null);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+
+  const checkIdAvailability = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:8000/api/v1/users/verify-id', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+      
+      const data = await response.json();
+      setIsIdAvailable(data.available);
+      Alert.alert(data.available ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.');
+    } catch (error) {
+      Alert.alert('오류', '아이디 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  const sendVerificationCode = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:8000/api/v1/users/send-verification-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      if (response.ok) {
+        Alert.alert('인증코드가 발송되었습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '인증코드 발송 중 오류가 발생했습니다.');
+    }
+  };
+
+  const verifyEmail = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:8000/api/v1/users/verify-email-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, code: verificationCode }),
+      });
+      
+      if (response.ok) {
+        setIsEmailVerified(true);
+        Alert.alert('이메일 인증이 완료되었습니다.');
+      } else {
+        Alert.alert('인증코드가 일치하지 않습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '이메일 인증 중 오류가 발생했습니다.');
+    }
+  };
 
   const handleSignUp = () => {
     // 회원가입 로직 구현
-    console.log('Sign up attempt with:', { name, id, password });
+    console.log('Sign up attempt with:', { email, id, password });
   };
 
   const handleClose = () => {
@@ -71,24 +132,72 @@ const SignUpScreen = () => {
 
           <View style={styles.section}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>이름</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="이름을 입력해주세요"
-                value={name}
-                onChangeText={setName}
-              />
+              <Text style={styles.label}>아이디</Text>
+              <View style={styles.idInputContainer}>
+                <TextInput
+                  style={[styles.input, styles.idInput]}
+                  placeholder="아이디를 입력해주세요"
+                  value={id}
+                  onChangeText={setId}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity 
+                  style={styles.checkButton} 
+                  onPress={checkIdAvailability}
+                >
+                  <Text style={styles.checkButtonText}>중복확인</Text>
+                </TouchableOpacity>
+              </View>
+              {isIdAvailable !== null && (
+                <Text style={[
+                  styles.availabilityText,
+                  isIdAvailable ? styles.available : styles.unavailable
+                ]}>
+                  {isIdAvailable ? '사용 가능한 아이디입니다.' : '이미 사용 중인 아이디입니다.'}
+                </Text>
+              )}
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>아이디</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="아이디를 입력해주세요"
-                value={id}
-                onChangeText={setId}
-                autoCapitalize="none"
-              />
+              <Text style={styles.label}>이메일</Text>
+              <View style={styles.emailInputContainer}>
+                <TextInput
+                  style={[styles.input, styles.emailInput]}
+                  placeholder="이메일을 입력해주세요"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                />
+                <TouchableOpacity 
+                  style={styles.verifyButton} 
+                  onPress={sendVerificationCode}
+                >
+                  <Text style={styles.verifyButtonText}>인증번호 발송</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>인증번호</Text>
+              <View style={styles.verificationContainer}>
+                <TextInput
+                  style={[styles.input, styles.verificationInput]}
+                  placeholder="인증번호를 입력해주세요"
+                  value={verificationCode}
+                  onChangeText={setVerificationCode}
+                  keyboardType="number-pad"
+                />
+                <TouchableOpacity 
+                  style={styles.verifyButton} 
+                  onPress={verifyEmail}
+                >
+                  <Text style={styles.verifyButtonText}>인증하기</Text>
+                </TouchableOpacity>
+              </View>
+              {isEmailVerified && (
+                <Text style={styles.verifiedText}>이메일 인증이 완료되었습니다.</Text>
+              )}
             </View>
 
             <View style={styles.inputGroup}>
@@ -114,7 +223,14 @@ const SignUpScreen = () => {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
+          <TouchableOpacity 
+            style={[
+              styles.signUpButton,
+              (!isIdAvailable || !isEmailVerified) && styles.disabledButton
+            ]} 
+            onPress={handleSignUp}
+            disabled={!isIdAvailable || !isEmailVerified}
+          >
             <Text style={styles.signUpButtonText}>가입하기</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -224,6 +340,68 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     backgroundColor: '#ffffff',
+  },
+  idInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  idInput: {
+    flex: 1,
+    marginRight: 8,
+  },
+  checkButton: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  checkButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+  },
+  emailInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  emailInput: {
+    flex: 1,
+    marginRight: 8,
+  },
+  verificationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  verificationInput: {
+    flex: 1,
+    marginRight: 8,
+  },
+  verifyButton: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  verifyButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+  },
+  availabilityText: {
+    marginTop: 4,
+    fontSize: 12,
+  },
+  available: {
+    color: '#10B981',
+  },
+  unavailable: {
+    color: '#EF4444',
+  },
+  verifiedText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: '#10B981',
+  },
+  disabledButton: {
+    backgroundColor: '#9CA3AF',
   },
   signUpButton: {
     backgroundColor: '#000000',

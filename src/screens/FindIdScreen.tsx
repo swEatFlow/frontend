@@ -7,8 +7,6 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
-  Keyboard,
-  Platform,
   SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -148,9 +146,6 @@ const FindIdScreen = () => {
           <View style={styles.stepContainer}>
             <View style={styles.header}>
               <Text style={styles.stepTitle}>이메일 주소를 입력해주세요</Text>
-              <Text style={styles.stepDescription}>
-                가입 시 등록한 이메일로 인증번호를 보내드립니다.
-              </Text>
             </View>
 
             <View style={styles.inputContainer}>
@@ -293,15 +288,15 @@ const FindIdScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   navBar: {
     height: 100,
+    backgroundColor: '#ffffff',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#e5e7eb',
     paddingTop: 30,
   },
   backButton: {
@@ -347,8 +342,10 @@ const styles = StyleSheet.create({
   },
   emailInput: {
     height: 48,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
     paddingHorizontal: 16,
     fontSize: 16,
   },
@@ -398,6 +395,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 48,
     borderWidth: 1,
+    backgroundColor: '#ffffff',
     borderColor: '#e5e7eb',
     borderRadius: 8,
     textAlign: 'center',
