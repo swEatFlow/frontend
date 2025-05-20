@@ -1,40 +1,42 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Image,
-  Dimensions,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  SafeAreaView,
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../utils/navigator';
 
-type SignUpScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SignUp'>;
+type SignupScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SignUp'>;
 
-const { width } = Dimensions.get('window');
-
-const SignUpScreen = () => {
-  const navigation = useNavigation<SignUpScreenNavigationProp>();
+const SignupScreen = () => {
+  const navigation = useNavigation<SignupScreenNavigationProp>();
   const [name, setName] = useState('');
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  const handleSignUp = () => {
-    // 회원가입 로직 구현
-    console.log('Sign up attempt with:', { name, id, password });
-  };
+  const handleSignup = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert('오류', '비밀번호가 일치하지 않습니다.');
+      return;
+    }
 
-  const handleClose = () => {
-    navigation.goBack();
+    try {
+      const response = await fetch('http://10.0.2.2:8000/api/v1/users/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, id, password }),
+      });
+      
+      if (response.ok) {
+        Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.');
+        navigation.navigate('Login');
+      } else {
+        Alert.alert('회원가입 실패', '회원가입 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      Alert.alert('오류', '회원가입 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -44,31 +46,10 @@ const SignUpScreen = () => {
         style={styles.keyboardAvoidingView}
       >
         <View style={styles.header}>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <Text style={styles.closeIcon}>←</Text>
-          </TouchableOpacity>
           <Text style={styles.title}>회원가입</Text>
         </View>
 
         <ScrollView style={styles.content}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>회원 정보</Text>
-            <View style={styles.profileSection}>
-              <View style={styles.profileImageContainer}>
-                {profileImage ? (
-                  <Image source={{ uri: profileImage }} style={styles.profileImage} />
-                ) : (
-                  <View style={styles.profilePlaceholder}>
-                    <Text style={styles.profileIcon}>👤</Text>
-                  </View>
-                )}
-              </View>
-              <TouchableOpacity style={styles.uploadButton}>
-                <Text style={styles.uploadButtonText}>프로필 사진 등록</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
           <View style={styles.section}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>이름</Text>
@@ -112,11 +93,14 @@ const SignUpScreen = () => {
                 secureTextEntry
               />
             </View>
-          </View>
 
-          <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-            <Text style={styles.signUpButtonText}>가입하기</Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.signupButton}
+              onPress={handleSignup}
+            >
+              <Text style={styles.signupButtonText}>회원가입</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -139,24 +123,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
-    position: 'relative',
   },
   title: {
     fontSize: 18,
     fontWeight: '500',
-  },
-  closeButton: {
-    position: 'absolute',
-    left: 16,
-    top: 40,
-    width: 40,
-    height: 40,
-    fontSize: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeIcon: {
-    fontSize: 32,
   },
   content: {
     flex: 1,
@@ -164,50 +134,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    marginBottom: 16,
-  },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  profileImageContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#e5e7eb',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-  },
-  profilePlaceholder: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileIcon: {
-    fontSize: 32,
-  },
-  uploadButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 8,
-  },
-  uploadButtonText: {
-    fontSize: 14,
-    color: '#000000',
   },
   inputGroup: {
     marginBottom: 16,
@@ -225,19 +151,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: '#ffffff',
   },
-  signUpButton: {
+  signupButton: {
     backgroundColor: '#000000',
     height: 48,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 16,
   },
-  signUpButtonText: {
+  signupButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '500',
   },
 });
 
-export default SignUpScreen; 
+export default SignupScreen; 
