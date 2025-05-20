@@ -12,7 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 
-export const ResetPasswordScreen: React.FC = () => {
+export const ResetPasswordScreen = () => {
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -155,4 +155,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-}); 
+});
+
+export default ResetPasswordScreen;

@@ -20,7 +20,7 @@ import { RootStackParamList } from '../utils/navigator';
 
 const { width } = Dimensions.get('window');
 
-const FindIdScreen: React.FC = () => {
+export const FindIdScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'FindId'>>();
   const [email, setEmail] = useState('');
   const [showClearButton, setShowClearButton] = useState(false);
@@ -131,8 +131,8 @@ const FindIdScreen: React.FC = () => {
       
       if (response.ok) {
         Alert.alert('인증코드가 발송되었습니다.');
-        setTimer(180); // 3분 타이머 설정
-        setIsTimerActive(true); // 타이머 활성화
+        setTimer(180);
+        setIsTimerActive(true);
       } else {
         Alert.alert('오류', '인증코드 발송에 실패했습니다.');
       }
@@ -163,17 +163,14 @@ const FindIdScreen: React.FC = () => {
   };
 
   const handleFindId = () => {
-    // Reset errors
     setEmailError('');
 
-    // Basic validation
     if (!email) {
       setEmailError('이메일을 입력해주세요');
       return;
     }
 
     setIsLoading(true);
-    // TODO: Implement actual find ID logic
     console.log('Find ID attempt with:', { email });
     setTimeout(() => setIsLoading(false), 2000);
   };
@@ -200,11 +197,7 @@ const FindIdScreen: React.FC = () => {
                 <TextInput
                   style={[styles.input, emailError ? styles.inputError : null]}
                   value={email}
-                  onChangeText={text => {
-                    setEmail(text);
-                    setShowClearButton(text.length > 0);
-                    setEmailError(validateEmail(text) ? '' : '올바른 이메일 형식이 아닙니다.');
-                  }}
+                  onChangeText={handleEmailChange}
                   placeholder="가입 시 사용한 이메일을 입력해주세요"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -226,7 +219,7 @@ const FindIdScreen: React.FC = () => {
                   style={[styles.input, styles.verificationInput]}
                   placeholder="인증번호를 입력해주세요"
                   value={verificationCode}
-                  onChangeText={setVerificationCode}
+                  onChangeText={handleVerificationCodeChange}
                   keyboardType="number-pad"
                 />
                 <TouchableOpacity 
@@ -295,17 +288,6 @@ const FindIdScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-function validateEmail(email: string): boolean {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
-}
-
-function formatTime(seconds: number) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
 
 const styles = StyleSheet.create({
   container: {
