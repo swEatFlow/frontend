@@ -88,9 +88,36 @@ const SignUpScreen = () => {
     }
   };
 
-  const handleSignUp = () => {
-    // 회원가입 로직 구현
-    console.log('Sign up attempt with:', { email, id, password });
+  const handleSignUp = async () => {
+    try {
+      const jsonData = {
+        email: email,
+        id: id,
+        password: password,
+        day: 0,
+      };
+      
+      const response = await fetch('http://10.0.2.2:8000/api/v1/users/signup', {
+        method: 'POST',
+        body: JSON.stringify(jsonData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        Alert.alert('성공', '회원가입이 완료되었습니다.');
+        navigation.goBack();
+      } else {
+        // 서버에서 오는 에러 메시지 처리
+        const errorMessage = data.detail?.[0]?.msg || data.message || '회원가입 중 오류가 발생했습니다.';
+        Alert.alert('오류', errorMessage);
+      }
+    } catch (error) {
+      Alert.alert('오류', '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleClose = () => {

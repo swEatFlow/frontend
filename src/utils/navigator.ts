@@ -3,5 +3,10 @@ export type RootStackParamList = {
     SignUp: undefined;
     FindId: undefined;
     ResetPassword: undefined;
-    Main: undefined;
+    MainTabs: undefined;
+    UserInfo: undefined;
+    Setting: undefined;
+    Home: undefined;
+    Record: undefined;
+    MyPage: undefined;
 }

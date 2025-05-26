@@ -38,7 +38,7 @@ const LoginScreen = () => {
       if (response.ok) {
         const data = await response.json();
         await AsyncStorage.setItem('access_token', data.access_token);
-        navigation.navigate('Main');
+        navigation.navigate('UserInfo');
       } else {
         Alert.alert('로그인 실패', '이메일 또는 비밀번호가 올바르지 않습니다.');
       }
@@ -55,7 +55,7 @@ const LoginScreen = () => {
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            <Image source={require('../assets/img/logo.png')} style={styles.logo} />
+            <Image source={require('../assets/favicon.png')} style={styles.logo} />
             <Text style={styles.logoText}>EatFlow</Text>
           </View>
           <Text style={styles.subtitle}>건강한 식단 관리</Text>
