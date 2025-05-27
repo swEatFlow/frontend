@@ -23,7 +23,7 @@ const ResetPasswordScreen = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [timer, setTimer] = useState(300); // 5분
+  const [timer, setTimer] = useState(180);
   const [step, setStep] = useState(1); // 1: ID/Email, 2: Verification, 3: New Password
   const [showResult, setShowResult] = useState(false);
 
@@ -41,17 +41,27 @@ const ResetPasswordScreen = () => {
     navigation.goBack();
   };
 
-  const handleNext = () => {
-    if (step === 1) {
-      // ID, 이메일 확인 후 인증번호 발송
+  const handleUserCheck = async () => {
+    const response = await fetch("http://10.0.2.2:8000/api/v1/users/verify-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: email, id: id })
+    });
+    if (response.ok) {
       setStep(2);
-      setTimer(300);
-    } else if (step === 2) {
-      // 인증번호 확인 후 비밀번호 변경 단계로
-      setStep(3);
-    } else if (step === 3) {
-      // 비밀번호 변경 완료
-      setShowResult(true);
+      setTimer(180);
+      await fetch("http://10.0.2.2:8000/api/v1/users/send-verification-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email: email })
+      });
+    } else {
+      const error = await response.json();
+      console.log(error);
     }
   };
 
@@ -61,9 +71,36 @@ const ResetPasswordScreen = () => {
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const handleVerifyCode = () => {
-    // 인증번호 확인 로직
-    setStep(3);
+  const handleVerifyCode = async () => {
+    const response = await fetch("http://10.0.2.2:8000/api/v1/users/verify-email-code", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: email, code: verificationCode })
+    });
+    if (response.ok) {
+      setStep(3);
+    } else {
+      const error = await response.json();
+      console.log(error);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    const response = await fetch("http://10.0.2.2:8000/api/v1/users/reset-password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: email, id: id, new_password: newPassword })
+    });
+    if (response.ok) {
+      setShowResult(true);
+    } else {
+      const error = await response.json();
+      console.log(error);
+    }
   };
 
   const handleGoToLogin = () => {
@@ -109,28 +146,36 @@ const ResetPasswordScreen = () => {
                       autoCapitalize="none"
                     />
                   </View>
+                  <TouchableOpacity style={styles.nextButton} onPress={handleUserCheck}>
+                    <Text style={styles.nextButtonText}>인증번호 받기</Text>
+                  </TouchableOpacity>
                 </>
               )}
 
               {step === 2 && (
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>인증번호</Text>
-                  <View style={styles.verificationContainer}>
-                    <TextInput
-                      style={[styles.input, styles.verificationInput]}
-                      placeholder="인증번호를 입력해주세요"
-                      value={verificationCode}
-                      onChangeText={setVerificationCode}
-                      keyboardType="number-pad"
-                    />
-                    <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyCode}>
-                      <Text style={styles.verifyButtonText}>확인</Text>
-                    </TouchableOpacity>
+                <>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>인증번호</Text>
+                    <View style={styles.verificationContainer}>
+                      <TextInput
+                        style={[styles.input, styles.verificationInput]}
+                        placeholder="인증번호를 입력해주세요"
+                        value={verificationCode}
+                        onChangeText={setVerificationCode}
+                        keyboardType="number-pad"
+                      />
+                      <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyCode}>
+                        <Text style={styles.verifyButtonText}>확인</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={styles.timerText}>
+                      남은 시간: {formatTime(timer)}
+                    </Text>
                   </View>
-                  <Text style={styles.timerText}>
-                    남은 시간: {formatTime(timer)}
-                  </Text>
-                </View>
+                  <TouchableOpacity style={styles.nextButton} onPress={handleVerifyCode}>
+                    <Text style={styles.nextButtonText}>다음</Text>
+                  </TouchableOpacity>
+                </>
               )}
 
               {step === 3 && (
@@ -158,24 +203,11 @@ const ResetPasswordScreen = () => {
                       secureTextEntry
                     />
                   </View>
+                  <TouchableOpacity style={styles.nextButton} onPress={handleResetPassword}>
+                    <Text style={styles.nextButtonText}>비밀번호 변경</Text>
+                  </TouchableOpacity>
                 </>
               )}
-
-              <TouchableOpacity
-                style={styles.nextButton}
-                onPress={handleNext}
-              >
-                <Text style={styles.nextButtonText}>
-                  {step === 1 ? '인증번호 받기' : step === 2 ? '다음' : '비밀번호 변경'}
-                </Text>
-              </TouchableOpacity>
-
-
-
-
-
-
-
             </View>
           ) : (
             <View style={styles.resultContainer}>

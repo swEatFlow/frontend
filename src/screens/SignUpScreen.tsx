@@ -26,7 +26,6 @@ const SignUpScreen = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState('');
   const [isIdAvailable, setIsIdAvailable] = useState<boolean | null>(null);
   const [isEmailVerified, setIsEmailVerified] = useState(false);

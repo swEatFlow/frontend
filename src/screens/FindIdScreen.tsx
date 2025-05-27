@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
-
-
   SafeAreaView,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -26,11 +25,11 @@ const FindIdScreen = () => {
   const [showClearButton, setShowClearButton] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [isEmailStep, setIsEmailStep] = useState(true);
-  const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
+  const [verificationCode, setVerificationCode] = useState('');
   const [timer, setTimer] = useState(180); // 3분
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [verificationError, setVerificationError] = useState('');
-  const inputRefs = useRef<TextInput[]>([]);
+  const [id, setId] = useState<string | null>('');
 
   // 이메일 유효성 검사
   const validateEmail = (email: string): boolean => {
@@ -81,43 +80,67 @@ const FindIdScreen = () => {
     setEmailError(validateEmail(text) ? '' : '올바른 이메일 형식이 아닙니다.');
   };
 
-  // 인증번호 입력 처리
-  const handleVerificationCodeChange = (text: string, index: number) => {
-    const newCode = [...verificationCode];
-    newCode[index] = text;
-    setVerificationCode(newCode);
-
-    if (text.length === 1 && index < 5 && inputRefs.current[index + 1]) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
+  const handleVerificationCode = (code: string) => {
+    setVerificationCode(code);
+  }
 
   // 인증번호 요청
-  const handleRequestVerification = () => {
+  const handleRequestVerification = async () => {
     if (validateEmail(email)) {
       setIsEmailStep(false);
       setTimer(180);
       setVerificationError('');
-      if (inputRefs.current[0]) {
-        inputRefs.current[0].focus();
-      }
+      const response = await fetch("http://10.0.2.2:8000/api/v1/users/send-verification-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+      }).then(res => res.json());
+      Alert.alert(response.detail.toString());
     }
   };
 
   // 인증번호 재발송
   const handleResendVerification = () => {
-    setVerificationCode(['', '', '', '', '', '']);
+    setVerificationCode('');
     setTimer(180);
     setVerificationError('');
-    if (inputRefs.current[0]) {
-      inputRefs.current[0].focus();
-    }
-  };
+  }
 
   // 인증 확인
-  const handleVerify = () => {
-    // 여기서 실제 인증 로직 구현
-    setShowSuccessModal(true);
+  const handleVerify = async () => {
+    try {
+      const response = await fetch("http://10.0.2.2:8000/api/v1/users/verify-email-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email: email, code: verificationCode })
+      });
+      if (response.ok) {
+        const result: { id: string } = await fetch("http://10.0.2.2:8000/api/v1/users/find-id", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email })
+        }).then(res => res.json());
+        if (result.id) {
+          setId(result.id);
+          setShowSuccessModal(true);
+        } else {
+          Alert.alert("회원가입이 되어있지 않습니다.");
+        }
+      } else {
+        Alert.alert("인증코드가 일치하지 않습니다.")
+        const error = await response.json();
+        console.log(error);
+      }
+    } catch (e) {
+      console.log(e);
+      Alert.alert("전송중 오류가 발생했습니다.")
+    }
   };
 
   // 뒤로가기
@@ -126,7 +149,7 @@ const FindIdScreen = () => {
       navigation.goBack();
     } else {
       setIsEmailStep(true);
-      setVerificationCode(['', '', '', '', '', '']);
+      setVerificationCode('');
       setVerificationError('');
     }
   };
@@ -148,9 +171,6 @@ const FindIdScreen = () => {
           <View style={styles.stepContainer}>
             <View style={styles.header}>
               <Text style={styles.stepTitle}>이메일 주소를 입력해주세요</Text>
-
-
-
             </View>
 
             <View style={styles.inputContainer}>
@@ -201,23 +221,12 @@ const FindIdScreen = () => {
             </View>
 
             <View style={styles.verificationContainer}>
-              <View style={styles.verificationInputs}>
-                {verificationCode.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    ref={(ref) => {
-                      if (ref) {
-                        inputRefs.current[index] = ref;
-                      }
-                    }}
-                    style={styles.verificationInput}
-                    value={digit}
-                    onChangeText={(text) => handleVerificationCodeChange(text, index)}
-                    keyboardType="number-pad"
-                    maxLength={1}
-                  />
-                ))}
-              </View>
+                <TextInput
+                  style={styles.verificationInput}
+                  value={verificationCode}
+                  onChangeText={handleVerificationCode}
+                  keyboardType='number-pad'
+                />
 
               <View style={styles.timerContainer}>
                 <Text style={styles.timerText}>
@@ -241,11 +250,9 @@ const FindIdScreen = () => {
         <View style={styles.bottomButtonContainer}>
           <TouchableOpacity
             style={[
-              styles.button,
-              verificationCode.some((digit) => digit === '') && styles.buttonDisabled,
+              styles.button
             ]}
             onPress={handleVerify}
-            disabled={verificationCode.some((digit) => digit === '')}
           >
             <Text style={styles.buttonText}>인증하기</Text>
           </TouchableOpacity>
@@ -271,7 +278,7 @@ const FindIdScreen = () => {
 
             <View style={styles.idContainer}>
               <Text style={styles.idLabel}>회원님의 아이디</Text>
-              <Text style={styles.idValue}>user1234</Text>
+              <Text style={styles.idValue}>{id}</Text>
             </View>
 
             <TouchableOpacity
@@ -392,13 +399,7 @@ const styles = StyleSheet.create({
   verificationContainer: {
     marginBottom: 24,
   },
-  verificationInputs: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
   verificationInput: {
-    width: 40,
     height: 48,
     borderWidth: 1,
     backgroundColor: '#ffffff',
