@@ -9,10 +9,7 @@ import {
   SignUpScreen,
   ResetPasswordScreen,
   UserInfoScreen,
-  SettingScreen,
-  HomeScreen,
-  RecordScreen,
-  MyPageScreen,
+  SettingScreen
 } from './src/index';
 import { RootStackParamList } from './src/utils/navigator';
 import { getItem } from './src/store/useStore';
@@ -25,7 +22,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const access_token = await getItem('access_token');
+        const access_token = await getItem('token');
         setIsAuthenticated(!!access_token);
       } catch (error) {
         console.error('Error checking authentication:', error);

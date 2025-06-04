@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,23 +8,24 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../utils/navigator';
+import { getItem } from '../store/useStore';
+import { Alert } from 'react-native';
 
 type UserInfoScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'UserInfo'>;
 
 const UserInfoScreen = () => {
   const navigation = useNavigation<UserInfoScreenNavigationProp>();
   const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [activity, setActivity] = useState('');
+  const [gender, setGender] = useState(-1); // 0: 남성, 1: 여성
+  const [activity, setActivity] = useState(-1); // 0: 낮음, 1: 중간, 2: 높음
   const [goal, setGoal] = useState('');
   const [selectedDiseases, setSelectedDiseases] = useState<string[]>([]);
-  const [mealPrepTime, setMealPrepTime] = useState(30);
-  const [eatingOutFrequency, setEatingOutFrequency] = useState('3-4');
+  const [eatingOutFrequency, setEatingOutFrequency] = useState('-1');
+  const [searchDisease, setSearchDisease] = useState('');
 
   const commonDiseases = [
     '당뇨병',
@@ -35,11 +36,49 @@ const UserInfoScreen = () => {
     '갑상선질환',
   ];
 
+  useEffect(() => {
+    const initUserInfo = async () => {
+      const token = await getItem("token");
+      const result = await fetch("http://10.0.2.2:8000/api/v1/users/user-check", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      }).then(res => res.json());
+
+      if (result.status === "setting") {
+        const response = await fetch("http://10.0.2.2:8000/api/v1/users/my", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+        }).then(res => res.json());
+
+        setAge(response.age.toString());
+        setGender(response.sex);
+        setActivity(response.activity_level);
+        setGoal(response.purpose);
+        setEatingOutFrequency(response.lifestyle);
+        setSelectedDiseases(response.disease.split(','));
+      }
+    };
+    initUserInfo();
+  }, [])
+
   const toggleDisease = (disease: string) => {
     if (selectedDiseases.includes(disease)) {
       setSelectedDiseases(selectedDiseases.filter(d => d !== disease));
     } else {
       setSelectedDiseases([...selectedDiseases, disease]);
+    }
+  };
+
+  const handleAddDisease = (disease: string) => {
+    if (disease.trim() && !selectedDiseases.includes(disease.trim())) {
+      setSelectedDiseases([...selectedDiseases, disease.trim()]);
+      setSearchDisease('');
     }
   };
 
@@ -63,21 +102,61 @@ const UserInfoScreen = () => {
     </TouchableOpacity>
   );
 
-  const handleSave = () => {
-    navigation.navigate('MainTabs');
+  const handleSave = async () => {
+    if (age === '') {
+      Alert.alert("나이를 입력하세요.");
+      return ;
+    }
+    if (gender === -1) {
+      Alert.alert("성별을 선택해주세요.");
+      return ;
+    }
+    if (activity === -1) {
+      Alert.alert("활동량을 선택해주세요.");
+      return ;
+    }
+    if (goal === '') {
+      Alert.alert("목표를 설정해주세요.");
+      return ;
+    }
+    if (eatingOutFrequency === '-1') {
+      Alert.alert("외식 빈도를 선택해주세요.");
+      return ;
+    }
+    try {
+      const token = await getItem('token');
+      const response = await fetch("http://10.0.2.2:8000/api/v1/users/user-info", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          sex: gender,
+          age: parseInt(age),
+          activity_level: activity,
+          purpose: goal,
+          lifestyle: eatingOutFrequency,
+          disease: selectedDiseases
+        })
+      });
+      if (response.ok) {
+        Alert.alert("유저 정보가 업데이트 되었습니다.");
+        navigation.navigate("MainTabs");
+      }
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.backIcon}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>프로필 설정</Text>
-        </View>
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backIcon}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>초기 정보 설정</Text>
       </View>
-
       <ScrollView style={styles.content}>
         {/* 기본 정보 섹션 */}
         <View style={styles.section}>
@@ -91,7 +170,7 @@ const UserInfoScreen = () => {
                 <TextInput
                   style={styles.ageInput}
                   value={age}
-                  onChangeText={setAge}
+                  onChangeText={(text) => setAge(text)}
                   keyboardType="numeric"
                   placeholder="나이를 입력해주세요"
                 />
@@ -107,9 +186,9 @@ const UserInfoScreen = () => {
                 <TouchableOpacity
                   style={[
                     styles.genderButton,
-                    gender === 'male' && styles.selectedGenderButton,
+                    gender === 0 && styles.selectedGenderButton,
                   ]}
-                  onPress={() => setGender('male')}
+                  onPress={() => setGender(0)}
                 >
                   <Text style={styles.genderIcon}>👨</Text>
                   <Text style={styles.genderText}>남성</Text>
@@ -117,9 +196,9 @@ const UserInfoScreen = () => {
                 <TouchableOpacity
                   style={[
                     styles.genderButton,
-                    gender === 'female' && styles.selectedGenderButton,
+                    gender === 1 && styles.selectedGenderButton,
                   ]}
-                  onPress={() => setGender('female')}
+                  onPress={() => setGender(1)}
                 >
                   <Text style={styles.genderIcon}>👩</Text>
                   <Text style={styles.genderText}>여성</Text>
@@ -137,19 +216,19 @@ const UserInfoScreen = () => {
           <View style={styles.activityContainer}>
             {[
               {
-                value: 'high',
+                value: 2,
                 icon: '🏃',
                 title: '높음',
                 description: '주 5-7일 운동, 활발한 생활 패턴',
               },
               {
-                value: 'medium',
+                value: 1,
                 icon: '🚶',
                 title: '중간',
                 description: '주 3-4일 운동, 보통의 활동량',
               },
               {
-                value: 'low',
+                value: 0,
                 icon: '🪑',
                 title: '낮음',
                 description: '주 0-2일 운동, 좌식 생활 위주',
@@ -190,19 +269,19 @@ const UserInfoScreen = () => {
           <View style={styles.goalContainer}>
             {[
               {
-                value: 'weight_loss',
+                value: '체중 감량',
                 icon: '⚖️',
                 title: '체중 감량',
                 description: '건강한 식습관과 운동으로 체중 감소',
               },
               {
-                value: 'muscle_gain',
+                value: '근육량 증가',
                 icon: '💪',
                 title: '근육량 증가',
                 description: '단백질 섭취와 근력 운동으로 근육 발달',
               },
               {
-                value: 'maintain',
+                value: '체형 유지',
                 icon: '❤️',
                 title: '체형 유지',
                 description: '현재 체형을 유지하며 건강 관리',
@@ -246,7 +325,11 @@ const UserInfoScreen = () => {
               <Text style={styles.searchIcon}>🔍</Text>
               <TextInput
                 style={styles.diseaseSearch}
-                placeholder="질병을 검색하세요"
+                placeholder="질병을 입력하세요"
+                value={searchDisease}
+                onChangeText={setSearchDisease}
+                onSubmitEditing={() => handleAddDisease(searchDisease)}
+                returnKeyType="done"
               />
             </View>
             <View style={styles.selectedDiseasesContainer}>
@@ -272,27 +355,6 @@ const UserInfoScreen = () => {
         {/* 라이프스타일 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>라이프스타일</Text>
-          <View style={styles.card}>
-            <View style={styles.lifestyleGroup}>
-              <Text style={styles.label}>식사 준비 가능 시간</Text>
-              <Slider
-                style={styles.slider}
-                minimumValue={5}
-                maximumValue={60}
-                step={5}
-                value={mealPrepTime}
-                onValueChange={setMealPrepTime}
-                minimumTrackTintColor="#4F46E5"
-                maximumTrackTintColor="#e2e8f0"
-                thumbTintColor="#4F46E5"
-              />
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabel}>5분</Text>
-                <Text style={styles.sliderValue}>{mealPrepTime}분</Text>
-                <Text style={styles.sliderLabel}>60분</Text>
-              </View>
-            </View>
-
             <View style={styles.lifestyleGroup}>
               <Text style={styles.label}>주간 외식 빈도</Text>
               <View style={styles.pickerContainer}>
@@ -301,6 +363,7 @@ const UserInfoScreen = () => {
                   onValueChange={setEatingOutFrequency}
                   style={styles.picker}
                 >
+                  <Picker.Item label="선택해주세요." value="-1" />
                   <Picker.Item label="거의 없음" value="0" />
                   <Picker.Item label="주 1-2회" value="1-2" />
                   <Picker.Item label="주 3-4회" value="3-4" />
@@ -308,14 +371,13 @@ const UserInfoScreen = () => {
                   <Picker.Item label="매일" value="7+" />
                 </Picker>
               </View>
-            </View>
           </View>
         </View>
       </ScrollView>
 
       <View style={styles.bottomButton}>
-        <TouchableOpacity style={styles.saveButton}>
-          <Text style={styles.saveButtonText} onPress={handleSave}>프로필 저장하기</Text>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>프로필 저장하기</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -326,6 +388,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  navBar: {
+    height: 100,
+    backgroundColor: '#ffffff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingTop: 30,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 16,
+    top: 40,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    fontSize: 32,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '500',
   },
   header: {
     flexDirection: 'row',
@@ -340,17 +428,6 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  backIcon: {
-    fontSize: 24,
-    color: '#4b5563',
   },
   headerTitle: {
     fontSize: 18,
@@ -636,7 +713,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   picker: {
-    height: 48,
+    height: 55,
   },
   bottomButton: {
     padding: 16,

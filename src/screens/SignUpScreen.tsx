@@ -23,7 +23,7 @@ const { width } = Dimensions.get('window');
 const SignUpScreen = () => {
   const navigation = useNavigation<SignUpScreenNavigationProp>();
   const [email, setEmail] = useState('');
-  const [id, setId] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
@@ -37,7 +37,7 @@ const SignUpScreen = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ username }),
       });
       
       const data = await response.json();
@@ -91,9 +91,8 @@ const SignUpScreen = () => {
     try {
       const jsonData = {
         email: email,
-        id: id,
+        username: username,
         password: password,
-        day: 0,
       };
       
       const response = await fetch('http://10.0.2.2:8000/api/v1/users/signup', {
@@ -148,8 +147,8 @@ const SignUpScreen = () => {
                 <TextInput
                   style={[styles.input, styles.idInput]}
                   placeholder="아이디를 입력해주세요"
-                  value={id}
-                  onChangeText={setId}
+                  value={username}
+                  onChangeText={setUsername}
                   autoCapitalize="none"
                 />
                 <TouchableOpacity 

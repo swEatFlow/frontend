@@ -300,7 +300,7 @@ const FindIdScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
+    backgroundColor: '#ffffff',
   },
   navBar: {
     height: 100,

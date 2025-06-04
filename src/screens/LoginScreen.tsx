@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -15,6 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../utils/navigator';
+import { getItem, setItem } from '../store/useStore';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -22,30 +22,48 @@ const { width } = Dimensions.get('window');
 
 const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const [id, setId] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    try { // 안드로이드 AVD 전용 url
-      const response = await fetch('http://10.0.2.2:8000/api/v1/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id, password }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        await AsyncStorage.setItem('access_token', data.access_token);
-        navigation.navigate('UserInfo');
-      } else {
-        Alert.alert('로그인 실패', '이메일 또는 비밀번호가 올바르지 않습니다.');
-      }
-    } catch (error) {
-      Alert.alert('오류가 발생했습니다.');
+    if (!username || !password) {
+        Alert.alert("아이디나 비밀번호를 입력해주세요.");
+        return;
     }
-  };
+
+    const formData = new URLSearchParams();
+    formData.append("username", username);
+    formData.append("password", password);
+    const response = await fetch("http://10.0.2.2:8000/api/v1/users/login", {
+      method: "POST",
+      headers: {
+          "Content-type": "application/x-www-form-urlencoded"
+      },
+      body: formData.toString()
+    });
+    const data = await response.json()
+    if (response.ok) {
+      await setItem("token", data.access_token);
+      const token = await getItem("token");
+      const result = await fetch("http://10.0.2.2:8000/api/v1/users/user-check", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      })
+      .then(res => res.json())
+      .catch(() => console.log("오류 발생"))
+
+      if (result.status === "setting") {
+        navigation.navigate("MainTabs")
+      } else {
+        navigation.navigate('UserInfo');
+      }
+    } else if (response.status === 401) {
+        Alert.alert(data.detail);
+    }
+  }
 
   return (
     <KeyboardAvoidingView
@@ -65,8 +83,8 @@ const LoginScreen = () => {
           <TextInput
             style={styles.input}
             placeholder="아이디를 입력해주세요"
-            value={id}
-            onChangeText={setId}
+            value={username}
+            onChangeText={setUsername}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -76,7 +94,6 @@ const LoginScreen = () => {
             placeholder="비밀번호를 입력해주세요"
             value={password}
             onChangeText={setPassword}
-
             secureTextEntry
           />
 
@@ -131,7 +148,6 @@ const styles = StyleSheet.create({
     height: 50,
   },
   logoText: {
-
     fontSize: 36,
     color: '#000000',
     marginLeft: 10,

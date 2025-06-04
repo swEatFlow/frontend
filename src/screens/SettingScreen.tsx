@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,21 +7,39 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../utils/navigator';
 import Header from '../components/header';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getItem, removeItem } from '../store/useStore';
 
 type SettingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Setting'>;
 
 const SettingScreen = () => {
   const navigation = useNavigation<SettingScreenNavigationProp>();
-  const [targetWeight, setTargetWeight] = useState('65');
-  const [breakfastTime, setBreakfastTime] = useState('08:00');
-  const [lunchTime, setLunchTime] = useState('12:00');
-  const [dinnerTime, setDinnerTime] = useState('18:00');
+  const [breakfastTime, setBreakfastTime] = useState('');
+  const [lunchTime, setLunchTime] = useState('');
+  const [dinnerTime, setDinnerTime] = useState('');
+
+  useEffect(() => {
+    const initUserInfo = async () => {
+      const token = await getItem('token');
+      const response = await fetch("http://10.0.2.2:8000/api/v1/users/set-time", {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      setBreakfastTime(data.morning);
+      setLunchTime(data.afternoon);
+      setDinnerTime(data.evening); 
+    }
+    initUserInfo();
+  }, []);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -38,48 +56,75 @@ const SettingScreen = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('access_token');
+      await removeItem('token');
       navigation.reset({
         index: 0,
         routes: [{ name: 'Login' }],
       });
     } catch (error) {
       console.error('Error during logout:', error);
+      Alert.alert('오류', '로그아웃 중 문제가 발생했습니다.');
     }
   };
+  
+  const handleWithdrawal = async () => {
+    const token = await getItem('token');
+    const response = await fetch("http://10.0.2.2:8000/api/v1/users/withdrawal", {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) {
+      throw new Error('Failed to withdrawal');
+    }
+    Alert.alert('회원탈퇴가 완료되었습니다.');
+    await removeItem('token');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  }
+
+  const handleTimeChange = async () => {
+    const token = await getItem('token');
+    const response = await fetch("http://10.0.2.2:8000/api/v1/users/set-time", {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        morning: breakfastTime,
+        afternoon: lunchTime,
+        evening: dinnerTime,
+      })
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update time');
+    }
+    Alert.alert('시간 설정이 완료되었습니다.');
+  }
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.navBar}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backIcon}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>설정</Text>
+      </View>
       <ScrollView style={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>설정</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.subTitle}>프로필 설정</Text>
+          <Text style={styles.subTitle}>계정 설정</Text>
           <View style={styles.profileContainer}>
             <View style={styles.profileImage}>
               <Text style={styles.profileIcon}>👤</Text>
             </View>
-            <TouchableOpacity style={styles.editButton}>
-              <Text style={styles.editButtonText}>프로필 수정</Text>
+            <TouchableOpacity style={styles.editButton} onPress={() => {}}>
+              <Text style={styles.editButtonText}>계정 정보 수정</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.subTitle}>목표 설정</Text>
-          <View style={styles.weightContainer}>
-            <Text style={styles.label}>목표 체중</Text>
-            <View style={styles.weightInputContainer}>
-              <TextInput
-                style={styles.weightInput}
-                value={targetWeight}
-                onChangeText={setTargetWeight}
-                keyboardType="numeric"
-              />
-              <Text style={styles.unit}>kg</Text>
-            </View>
           </View>
         </View>
 
@@ -109,14 +154,16 @@ const SettingScreen = () => {
               onChangeText={setDinnerTime}
             />
           </View>
+          <View style={styles.saveButtonContainer}>
+            <TouchableOpacity style={styles.saveButton} onPress={handleTimeChange}>
+              <Text style={styles.saveButtonText}>저장</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.section}>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('UserInfo')}>
             <Text style={styles.menuText}>회원정보</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuText}>알림 설정</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem}>
             <Text style={styles.menuText}>이용약관</Text>
@@ -129,6 +176,23 @@ const SettingScreen = () => {
         <View style={styles.section}>
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
             <Text style={[styles.menuText, styles.logoutText]}>로그아웃</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => {
+              Alert.alert('회원탈퇴', '정말 회원탈퇴를 진행하시겠습니까?', [
+                {
+                  text: '취소',
+                  style: 'cancel',
+                },
+                {
+                  text: '회원탈퇴',
+                  onPress: () => {
+                    handleWithdrawal();
+                  },
+                }
+              ])
+            }
+          }>
+            <Text style={[styles.menuText, styles.logoutText]}>회원탈퇴</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -150,6 +214,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+  },
+  navBar: {
+    height: 100,
+    backgroundColor: '#ffffff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingTop: 30,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 16,
+    top: 40,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    fontSize: 32,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '500',
   },
   logo: {
     fontSize: 20,
@@ -259,6 +349,21 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: '#ef4444',
+  },
+  saveButtonContainer: {
+    marginTop: 16,
+    alignItems: 'flex-end',
+  },
+  saveButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 8,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    color: '#000000',
   },
 });
 
