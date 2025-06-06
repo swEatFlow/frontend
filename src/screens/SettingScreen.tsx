@@ -7,13 +7,14 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  Alert,
+  Alert
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../utils/navigator';
 import Header from '../components/header';
 import { getItem, removeItem } from '../store/useStore';
+import AccountInfoModal from '../components/AccountInfoModal';
 
 type SettingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Setting'>;
 
@@ -22,6 +23,7 @@ const SettingScreen = () => {
   const [breakfastTime, setBreakfastTime] = useState('');
   const [lunchTime, setLunchTime] = useState('');
   const [dinnerTime, setDinnerTime] = useState('');
+  const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
 
   useEffect(() => {
     const initUserInfo = async () => {
@@ -122,7 +124,7 @@ const SettingScreen = () => {
             <View style={styles.profileImage}>
               <Text style={styles.profileIcon}>👤</Text>
             </View>
-            <TouchableOpacity style={styles.editButton} onPress={() => {}}>
+            <TouchableOpacity style={styles.editButton} onPress={() => setIsAccountModalVisible(true)}>
               <Text style={styles.editButtonText}>계정 정보 수정</Text>
             </TouchableOpacity>
           </View>
@@ -196,6 +198,11 @@ const SettingScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <AccountInfoModal
+        visible={isAccountModalVisible}
+        onClose={() => setIsAccountModalVisible(false)}
+      />
     </SafeAreaView>
   );
 };
