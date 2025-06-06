@@ -9,10 +9,11 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../utils/navigator';
 import Header from '../components/header';
+import { getItem } from '../store/useStore';
 
 const { width } = Dimensions.get('window');
 
@@ -44,7 +45,26 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'H
 
 export const HomeScreen = () => {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [purpose, setPurpose] = useState('');
   const navigation = useNavigation<HomeScreenNavigationProp>();
+
+  const initPurpose = async () => {
+    const token = await getItem("token");
+    const response = await fetch("http://10.0.2.2:8000/api/v1/users/my", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    }).then(res => res.json());
+    setPurpose(response.purpose);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      initPurpose();
+    }, [])
+  );
 
   const handleScroll = (event: any) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
@@ -70,8 +90,8 @@ export const HomeScreen = () => {
       {/* Main Content */}
       <ScrollView style={styles.mainContent}>
         <View style={styles.dateSection}>
-          <Text style={styles.dateSubtitle}>목표 설정 후</Text>
-          <Text style={styles.dateTitle}>D+15일차</Text>
+          <Text style={styles.dateSubtitle}>목표 설정</Text>
+          <Text style={styles.dateTitle}>{purpose}</Text>
         </View>
 
         {/* Meal Slider */}
