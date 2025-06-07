@@ -24,8 +24,10 @@ const UserInfoScreen = () => {
   const [activity, setActivity] = useState(-1); // 0: 낮음, 1: 중간, 2: 높음
   const [goal, setGoal] = useState('');
   const [selectedDiseases, setSelectedDiseases] = useState<string[]>([]);
-  const [eatingOutFrequency, setEatingOutFrequency] = useState('-1');
+  const [eatingOutFrequency, setEatingOutFrequency] = useState('선택');
   const [searchDisease, setSearchDisease] = useState('');
+  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
+  const [searchAllergy, setSearchAllergy] = useState('');
 
   const commonDiseases = [
     '당뇨병',
@@ -34,6 +36,19 @@ const UserInfoScreen = () => {
     '위장질환',
     '관절염',
     '갑상선질환',
+  ];
+
+  const commonAllergies = [
+    '우유',
+    '계란',
+    '땅콩',
+    '견과류',
+    '대두',
+    '밀',
+    '생선',
+    '조개류',
+    '새우',
+    '게',
   ];
 
   useEffect(() => {
@@ -62,6 +77,7 @@ const UserInfoScreen = () => {
         setGoal(response.purpose);
         setEatingOutFrequency(response.lifestyle);
         setSelectedDiseases(response.disease.split(','));
+        setSelectedAllergies(response.allergies.split(','));
       }
     };
     initUserInfo();
@@ -102,6 +118,41 @@ const UserInfoScreen = () => {
     </TouchableOpacity>
   );
 
+  const toggleAllergy = (allergy: string) => {
+    if (selectedAllergies.includes(allergy)) {
+      setSelectedAllergies(selectedAllergies.filter(a => a !== allergy));
+    } else {
+      setSelectedAllergies([...selectedAllergies, allergy]);
+    }
+  };
+
+  const handleAddAllergy = (allergy: string) => {
+    if (allergy.trim() && !selectedAllergies.includes(allergy.trim())) {
+      setSelectedAllergies([...selectedAllergies, allergy.trim()]);
+      setSearchAllergy('');
+    }
+  };
+
+  const renderAllergyChip = (allergy: string) => (
+    <TouchableOpacity
+      key={allergy}
+      style={[
+        styles.diseaseChip,
+        selectedAllergies.includes(allergy) && styles.selectedDiseaseChip,
+      ]}
+      onPress={() => toggleAllergy(allergy)}
+    >
+      <Text
+        style={[
+          styles.diseaseChipText,
+          selectedAllergies.includes(allergy) && styles.selectedDiseaseChipText,
+        ]}
+      >
+        {allergy}
+      </Text>
+    </TouchableOpacity>
+  );
+
   const handleSave = async () => {
     if (age === '') {
       Alert.alert("나이를 입력하세요.");
@@ -119,8 +170,8 @@ const UserInfoScreen = () => {
       Alert.alert("목표를 설정해주세요.");
       return ;
     }
-    if (eatingOutFrequency === '-1') {
-      Alert.alert("외식 빈도를 선택해주세요.");
+    if (eatingOutFrequency === '선택') {
+      Alert.alert("라이프스타일을 선택해주세요.");
       return ;
     }
     try {
@@ -137,12 +188,16 @@ const UserInfoScreen = () => {
           activity_level: activity,
           purpose: goal,
           lifestyle: eatingOutFrequency,
-          disease: selectedDiseases
+          disease: selectedDiseases,
+          allergies: selectedAllergies
         })
       });
       if (response.ok) {
         Alert.alert("유저 정보가 업데이트 되었습니다.");
         navigation.navigate("MainTabs");
+      } else {
+        Alert.alert("유저 정보 업데이트에 실패했습니다.");
+        console.log(response.json());
       }
     } catch (e) {
       console.log(e)
@@ -352,23 +407,61 @@ const UserInfoScreen = () => {
           </View>
         </View>
 
+        {/* 알레르기 정보 섹션 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>알레르기 정보</Text>
+          <View style={styles.card}>
+            <Text style={styles.diseaseDescription}>
+              알레르기가 있는 음식을 선택해주세요. 맞춤 식단 추천에 활용됩니다.
+            </Text>
+            <View style={styles.diseaseSearchContainer}>
+              <Text style={styles.searchIcon}>🔍</Text>
+              <TextInput
+                style={styles.diseaseSearch}
+                placeholder="알레르기 음식을 입력하세요"
+                value={searchAllergy}
+                onChangeText={setSearchAllergy}
+                onSubmitEditing={() => handleAddAllergy(searchAllergy)}
+                returnKeyType="done"
+              />
+            </View>
+            <View style={styles.selectedDiseasesContainer}>
+              {selectedAllergies.map((allergy) => (
+                <View key={allergy} style={styles.selectedDiseaseChip}>
+                  <Text style={styles.selectedDiseaseChipText}>{allergy}</Text>
+                  <TouchableOpacity
+                    onPress={() => toggleAllergy(allergy)}
+                    style={styles.removeDiseaseButton}
+                  >
+                    <Text style={styles.removeDiseaseIcon}>×</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+            <Text style={styles.commonDiseasesTitle}>일반적인 알레르기</Text>
+            <View style={styles.diseaseChipsContainer}>
+              {commonAllergies.map(renderAllergyChip)}
+            </View>
+          </View>
+        </View>
+
         {/* 라이프스타일 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>라이프스타일</Text>
             <View style={styles.lifestyleGroup}>
-              <Text style={styles.label}>주간 외식 빈도</Text>
+              <Text style={styles.label}>라이프스타일</Text>
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={eatingOutFrequency}
                   onValueChange={setEatingOutFrequency}
                   style={styles.picker}
                 >
-                  <Picker.Item label="선택해주세요." value="-1" />
-                  <Picker.Item label="거의 없음" value="0" />
-                  <Picker.Item label="주 1-2회" value="1-2" />
-                  <Picker.Item label="주 3-4회" value="3-4" />
-                  <Picker.Item label="주 5-6회" value="5-6" />
-                  <Picker.Item label="매일" value="7+" />
+                  <Picker.Item label="선택해주세요." value="선택" />
+                  <Picker.Item label="학생" value="학생" />
+                  <Picker.Item label="직장인" value="직장인" />
+                  <Picker.Item label="주부" value="주부" />
+                  <Picker.Item label="무직" value="무직" />
+                  <Picker.Item label="기타" value="기타" />
                 </Picker>
               </View>
           </View>
@@ -735,4 +828,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserInfoScreen; 
+export default UserInfoScreen;

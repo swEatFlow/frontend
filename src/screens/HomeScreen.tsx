@@ -17,36 +17,20 @@ import { getItem } from '../store/useStore';
 
 const { width } = Dimensions.get('window');
 
-const meals = [
-  {
-    id: '1',
-    title: '아침',
-    calories: '400 kcal',
-    image: 'https://creatie.ai/ai/api/search-image?query=A healthy breakfast with eggs, avocado toast, and fresh fruits arranged on a white plate with a clean, minimalist background. The lighting is bright and natural, creating an appetizing presentation.&width=80&height=80&orientation=squarish',
-    items: ['계란 스크램블', '통밀 토스트', '아보카도'],
-  },
-  {
-    id: '2',
-    title: '점심',
-    calories: '450 kcal',
-    image: 'https://creatie.ai/ai/api/search-image?query=A healthy lunch bowl featuring grilled chicken, quinoa, fresh vegetables, and a light vinaigrette dressing. The presentation is clean and appetizing on a white background with natural lighting.&width=80&height=80&orientation=squarish',
-    items: ['닭가슴살 샐러드', '퀴노아', '채소 믹스'],
-  },
-  {
-    id: '3',
-    title: '저녁',
-    calories: '350 kcal',
-    image: 'https://creatie.ai/ai/api/search-image?query=A light and healthy dinner plate with grilled salmon, steamed vegetables, and brown rice. The food is arranged beautifully on a white plate with clean, minimalist styling and natural lighting.&width=80&height=80&orientation=squarish',
-    items: ['연어구이', '현미밥', '찐 채소'],
-  },
-];
-
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+type Meal = {
+  id: string;
+  title: string;
+  dish_name: string;
+  image: string;
+  items: string[];
+}
 
 export const HomeScreen = () => {
   const [activeSlide, setActiveSlide] = useState(0);
   const [purpose, setPurpose] = useState('');
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const [meals, setMeals] = useState<Meal[]>([]);
 
   const initPurpose = async () => {
     const token = await getItem("token");
@@ -60,9 +44,22 @@ export const HomeScreen = () => {
     setPurpose(response.purpose);
   };
 
+  const initMeal = async () => {
+    const token = await getItem("token");
+    const response = await fetch("http://10.0.2.2:8000/api/v1/meal/recommend", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    }).then(res => res.json());
+    setMeals(response);
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       initPurpose();
+      initMeal();
     }, [])
   );
 
@@ -90,7 +87,7 @@ export const HomeScreen = () => {
       {/* Main Content */}
       <ScrollView style={styles.mainContent}>
         <View style={styles.dateSection}>
-          <Text style={styles.dateSubtitle}>목표 설정</Text>
+          <Text style={styles.dateSubtitle}>오늘의 추천 식단</Text>
           <Text style={styles.dateTitle}>{purpose}</Text>
         </View>
 
@@ -108,7 +105,7 @@ export const HomeScreen = () => {
               <View style={styles.mealCard}>
                 <View style={styles.mealHeader}>
                   <Text style={styles.mealTitle}>{meal.title}</Text>
-                  <Text style={styles.mealCalories}>{meal.calories}</Text>
+                  <Text style={styles.mealDishName}>{meal.dish_name}</Text>
                 </View>
                 <View style={styles.mealContent}>
                   <Image
@@ -119,7 +116,7 @@ export const HomeScreen = () => {
                   <View style={styles.mealItems}>
                     {meal.items.map((item, index) => (
                       <Text key={index} style={styles.mealItem}>
-                        {item}
+                        • {item}
                       </Text>
                     ))}
                   </View>
@@ -195,10 +192,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  mealCalories: {
+  mealDishName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#000',
+    color: '#666',
+    marginTop: 4,
   },
   mealContent: {
     flex: 1,
@@ -212,12 +209,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   mealItems: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    width: '100%',
+    paddingHorizontal: 16,
   },
   mealItem: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 4,
+    marginBottom: 8,
+    lineHeight: 20,
   },
   dotsContainer: {
     flexDirection: 'row',

@@ -55,115 +55,121 @@ const RecordScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        {records.map((record) => {
-          return (
-            <View style={styles.dateSection}>
-              <View style={styles.dateHeader}>
-                <Text style={styles.dateText}>{record.date}</Text>
-                <View style={styles.calorieTag}>
-                  <Text style={styles.calorieText}>{record.kcal.reduce((acc: number, cur: string) => {return acc += parseInt(cur)}, 0).toLocaleString()} kcal</Text>
+        {records.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>기록이 없습니다</Text>
+          </View>
+        ) : (
+          records.map((record) => {
+            return (
+              <View style={styles.dateSection}>
+                <View style={styles.dateHeader}>
+                  <Text style={styles.dateText}>{record.date}</Text>
+                  <View style={styles.calorieTag}>
+                    <Text style={styles.calorieText}>{record.kcal.reduce((acc: number, cur: string) => {return acc += parseInt(cur)}, 0).toLocaleString()} kcal</Text>
+                  </View>
                 </View>
+                {record.morning_list.length > 0 ? (
+                  <>
+                    <Text style={styles.mealTimeText}>아침</Text>
+                    <View style={styles.mealCard}>
+                      <View style={styles.mealContent}>
+                        <View style={styles.imageContainer}>
+                          <Image
+                            source={{
+                              uri: 'https://readdy.ai/api/search-image?query=Korean%20brown%20rice%20bowl%20with%20doenjang%20jjigae%20soup%2C%20traditional%20Korean%20meal%20with%20side%20dishes%2C%20egg%2C%20vegetables%2C%20and%20soup%2C%20food%20photography%20style%2C%20isolated%20on%20white%20background%2C%20centered%20composition&width=200&height=200&seq=1&orientation=squarish'
+                            }}
+                            style={styles.mealImage}
+                          />
+                        </View>
+                        <View style={styles.mealInfo}>
+                          {record.morning_list.map((meal: any) => {
+                            return (
+                              <Text style={styles.mealDetail}>{meal}</Text>
+                            )
+                          })}
+                        </View>
+                        <View style={styles.mealInfo}>
+                          <Text style={styles.mealKcal}>총 칼로리</Text>
+                          <Text style={styles.mealKcal}>{parseInt(record.kcal[0]).toLocaleString()} kcal</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <View style={styles.emptyMealCard}>
+                    <Text style={styles.emptyMealText}>식사를 하지 않음</Text>
+                  </View>
+                )}
+                {record.afternoon_list.length > 0 ? (
+                  <>
+                    <Text style={styles.mealTimeText}>점심</Text>
+                    <View style={styles.mealCard}>
+                      <View style={styles.mealContent}>
+                        <View style={styles.imageContainer}>
+                          <Image
+                            source={{
+                              uri: 'https://readdy.ai/api/search-image?query=Korean%20brown%20rice%20bowl%20with%20doenjang%20jjigae%20soup%2C%20traditional%20Korean%20meal%20with%20side%20dishes%2C%20egg%2C%20vegetables%2C%20and%20soup%2C%20food%20photography%20style%2C%20isolated%20on%20white%20background%2C%20centered%20composition&width=200&height=200&seq=1&orientation=squarish'
+                            }}
+                            style={styles.mealImage}
+                          />
+                        </View>
+                        <View style={styles.mealInfo}>
+                          {record.afternoon_list.map((meal: any) => {
+                            return (
+                              <Text style={styles.mealDetail}>{meal}</Text>
+                            )
+                          })}
+                        </View>
+                        <View style={styles.mealInfo}>
+                          <Text style={styles.mealKcal}>총 칼로리</Text>
+                          <Text style={styles.mealKcal}>{parseInt(record.kcal[1]).toLocaleString()} kcal</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <View style={styles.emptyMealCard}>
+                    <Text style={styles.emptyMealText}>식사를 하지 않음</Text>
+                  </View>
+                )}
+                {record.evening_list.length > 0 ? (
+                  <>
+                    <Text style={styles.mealTimeText}>저녁</Text>
+                    <View style={styles.mealCard}>
+                      <View style={styles.mealContent}>
+                        <View style={styles.imageContainer}>
+                          <Image
+                            source={{
+                              uri: 'https://readdy.ai/api/search-image?query=Korean%20brown%20rice%20bowl%20with%20doenjang%20jjigae%20soup%2C%20traditional%20Korean%20meal%20with%20side%20dishes%2C%20egg%2C%20vegetables%2C%20and%20soup%2C%20food%20photography%20style%2C%20isolated%20on%20white%20background%2C%20centered%20composition&width=200&height=200&seq=1&orientation=squarish'
+                            }}
+                            style={styles.mealImage}
+                          />
+                        </View>
+                        <View style={styles.mealInfo}>
+                          {record.evening_list.map((meal: any) => {
+                            return (
+                              <Text style={styles.mealDetail}>{meal}</Text>
+                            )
+                          })}
+                        </View>
+                        <View style={styles.mealInfo}>
+                          <Text style={styles.mealKcal}>총 칼로리</Text>
+                          <Text style={styles.mealKcal}>{parseInt(record.kcal[2]).toLocaleString()} kcal</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <View style={styles.emptyMealCard}>
+                    <Text style={styles.emptyMealText}>식사를 하지 않음</Text>
+                  </View>
+                )}
+                
               </View>
-              {record.morning_list.length > 0 ? (
-                <>
-                  <Text style={styles.mealTimeText}>아침</Text>
-                  <View style={styles.mealCard}>
-                    <View style={styles.mealContent}>
-                      <View style={styles.imageContainer}>
-                        <Image
-                          source={{
-                            uri: 'https://readdy.ai/api/search-image?query=Korean%20brown%20rice%20bowl%20with%20doenjang%20jjigae%20soup%2C%20traditional%20Korean%20meal%20with%20side%20dishes%2C%20egg%2C%20vegetables%2C%20and%20soup%2C%20food%20photography%20style%2C%20isolated%20on%20white%20background%2C%20centered%20composition&width=200&height=200&seq=1&orientation=squarish'
-                          }}
-                          style={styles.mealImage}
-                        />
-                      </View>
-                      <View style={styles.mealInfo}>
-                        {record.morning_list.map((meal: any) => {
-                          return (
-                            <Text style={styles.mealDetail}>{meal}</Text>
-                          )
-                        })}
-                      </View>
-                      <View style={styles.mealInfo}>
-                        <Text style={styles.mealKcal}>총 칼로리</Text>
-                        <Text style={styles.mealKcal}>{parseInt(record.kcal[0]).toLocaleString()} kcal</Text>
-                      </View>
-                    </View>
-                  </View>
-                </>
-              ) : (
-                <View style={styles.emptyMealCard}>
-                  <Text style={styles.emptyMealText}>식사를 하지 않음</Text>
-                </View>
-              )}
-              {record.afternoon_list.length > 0 ? (
-                <>
-                  <Text style={styles.mealTimeText}>점심</Text>
-                  <View style={styles.mealCard}>
-                    <View style={styles.mealContent}>
-                      <View style={styles.imageContainer}>
-                        <Image
-                          source={{
-                            uri: 'https://readdy.ai/api/search-image?query=Korean%20brown%20rice%20bowl%20with%20doenjang%20jjigae%20soup%2C%20traditional%20Korean%20meal%20with%20side%20dishes%2C%20egg%2C%20vegetables%2C%20and%20soup%2C%20food%20photography%20style%2C%20isolated%20on%20white%20background%2C%20centered%20composition&width=200&height=200&seq=1&orientation=squarish'
-                          }}
-                          style={styles.mealImage}
-                        />
-                      </View>
-                      <View style={styles.mealInfo}>
-                        {record.afternoon_list.map((meal: any) => {
-                          return (
-                            <Text style={styles.mealDetail}>{meal}</Text>
-                          )
-                        })}
-                      </View>
-                      <View style={styles.mealInfo}>
-                        <Text style={styles.mealKcal}>총 칼로리</Text>
-                        <Text style={styles.mealKcal}>{parseInt(record.kcal[1]).toLocaleString()} kcal</Text>
-                      </View>
-                    </View>
-                  </View>
-                </>
-              ) : (
-                <View style={styles.emptyMealCard}>
-                  <Text style={styles.emptyMealText}>식사를 하지 않음</Text>
-                </View>
-              )}
-              {record.evening_list.length > 0 ? (
-                <>
-                  <Text style={styles.mealTimeText}>저녁</Text>
-                  <View style={styles.mealCard}>
-                    <View style={styles.mealContent}>
-                      <View style={styles.imageContainer}>
-                        <Image
-                          source={{
-                            uri: 'https://readdy.ai/api/search-image?query=Korean%20brown%20rice%20bowl%20with%20doenjang%20jjigae%20soup%2C%20traditional%20Korean%20meal%20with%20side%20dishes%2C%20egg%2C%20vegetables%2C%20and%20soup%2C%20food%20photography%20style%2C%20isolated%20on%20white%20background%2C%20centered%20composition&width=200&height=200&seq=1&orientation=squarish'
-                          }}
-                          style={styles.mealImage}
-                        />
-                      </View>
-                      <View style={styles.mealInfo}>
-                        {record.evening_list.map((meal: any) => {
-                          return (
-                            <Text style={styles.mealDetail}>{meal}</Text>
-                          )
-                        })}
-                      </View>
-                      <View style={styles.mealInfo}>
-                        <Text style={styles.mealKcal}>총 칼로리</Text>
-                        <Text style={styles.mealKcal}>{parseInt(record.kcal[2]).toLocaleString()} kcal</Text>
-                      </View>
-                    </View>
-                  </View>
-                </>
-              ) : (
-                <View style={styles.emptyMealCard}>
-                  <Text style={styles.emptyMealText}>식사를 하지 않음</Text>
-                </View>
-              )}
-              
-            </View>
-          )
-        })}
+            )
+          })
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -173,6 +179,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,

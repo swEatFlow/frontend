@@ -117,9 +117,7 @@ const LoginScreen = () => {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>버전 1.0.0</Text>
-        <Text style={styles.footerText}>
-          © 2024 건강한 식단 관리. All rights reserved.
-        </Text>
+        <Text style={styles.footerText}>© 2025 EatFlow. All rights reserved.</Text>
       </View>
     </KeyboardAvoidingView>
   );

@@ -25,7 +25,8 @@ const MyPageScreen = () => {
     activity_level: -1,
     purpose: '',
     lifestyle: '',
-    disease: ''
+    disease: '',
+    allergies: ''
   });
   const [processedDiseases, setProcessedDiseases] = useState<string[]>([]);
 
@@ -147,6 +148,12 @@ const MyPageScreen = () => {
             ) : (
               <Text style={styles.noDiseaseText}>등록된 질병이 없습니다.</Text>
             )}
+          </View>
+        </View>
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>알레르기</Text>
+          <View style={styles.infoCard}>
+            <Text style={styles.infoValue}>{userInfo.allergies}</Text>
           </View>
         </View>
       </ScrollView>

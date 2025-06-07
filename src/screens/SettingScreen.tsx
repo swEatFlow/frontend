@@ -374,4 +374,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SettingScreen; 
+export default SettingScreen;
