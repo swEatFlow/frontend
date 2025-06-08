@@ -60,9 +60,9 @@ const RecordScreen = () => {
             <Text style={styles.emptyText}>기록이 없습니다</Text>
           </View>
         ) : (
-          records.map((record) => {
+          records.map((record, index) => {
             return (
-              <View style={styles.dateSection}>
+              <View style={styles.dateSection} key={index}>
                 <View style={styles.dateHeader}>
                   <Text style={styles.dateText}>{record.date}</Text>
                   <View style={styles.calorieTag}>
@@ -83,9 +83,9 @@ const RecordScreen = () => {
                           />
                         </View>
                         <View style={styles.mealInfo}>
-                          {record.morning_list.map((meal: any) => {
+                          {record.morning_list.map((meal: any, index: number) => {
                             return (
-                              <Text style={styles.mealDetail}>{meal}</Text>
+                              <Text key={`morning-${index}`} style={styles.mealDetail}>{meal}</Text>
                             )
                           })}
                         </View>
@@ -115,9 +115,9 @@ const RecordScreen = () => {
                           />
                         </View>
                         <View style={styles.mealInfo}>
-                          {record.afternoon_list.map((meal: any) => {
+                          {record.afternoon_list.map((meal: any, index: number) => {
                             return (
-                              <Text style={styles.mealDetail}>{meal}</Text>
+                              <Text key={`afternoon-${index}`} style={styles.mealDetail}>{meal}</Text>
                             )
                           })}
                         </View>
@@ -147,9 +147,9 @@ const RecordScreen = () => {
                           />
                         </View>
                         <View style={styles.mealInfo}>
-                          {record.evening_list.map((meal: any) => {
+                          {record.evening_list.map((meal: any, index: number) => {
                             return (
-                              <Text style={styles.mealDetail}>{meal}</Text>
+                              <Text key={`evening-${index}`} style={styles.mealDetail}>{meal}</Text>
                             )
                           })}
                         </View>

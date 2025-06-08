@@ -119,26 +119,23 @@ const FindIdScreen = () => {
         body: JSON.stringify({ email: email, code: verificationCode })
       });
       if (response.ok) {
-        const result: { id: string } = await fetch("http://10.0.2.2:8000/api/v1/users/find-id", {
+        const result: { username: string } = await fetch("http://10.0.2.2:8000/api/v1/users/find-id", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({ email })
         }).then(res => res.json());
-        if (result.id) {
-          setId(result.id);
+        if (result.username) {
+          setId(result.username);
           setShowSuccessModal(true);
         } else {
           Alert.alert("회원가입이 되어있지 않습니다.");
         }
       } else {
         Alert.alert("인증코드가 일치하지 않습니다.")
-        const error = await response.json();
-        console.log(error);
       }
     } catch (e) {
-      console.log(e);
       Alert.alert("전송중 오류가 발생했습니다.")
     }
   };

@@ -70,11 +70,11 @@ const MyPageScreen = () => {
 
   const getLifestyleText = (lifestyle: string) => {
     switch (lifestyle) {
-      case '0': return '거의 없음';
-      case '1-2': return '주 1-2회';
-      case '3-4': return '주 3-4회';
-      case '5-6': return '주 5-6회';
-      case '7+': return '매일';
+      case '학생': return '학생';
+      case '직장인': return '직장인';
+      case '주부': return '주부';
+      case '무직': return '무직';
+      case '기타': return '기타';
       default: return '미설정';
     }
   };
@@ -128,7 +128,7 @@ const MyPageScreen = () => {
               <Text style={styles.infoValue}>{userInfo.purpose || '미설정'}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>외식 빈도</Text>
+              <Text style={styles.infoLabel}>라이프스타일</Text>
               <Text style={styles.infoValue}>{getLifestyleText(userInfo.lifestyle)}</Text>
             </View>
           </View>
@@ -137,7 +137,7 @@ const MyPageScreen = () => {
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>관련 질병</Text>
           <View style={styles.infoCard}>
-            {processedDiseases.length > 0 ? (
+            {processedDiseases && processedDiseases.length > 0 ? (
               <View style={styles.diseaseContainer}>
                 {processedDiseases.map((disease: string, index: number) => (
                   <View key={index} style={styles.diseaseChip}>
@@ -153,7 +153,11 @@ const MyPageScreen = () => {
         <View style={styles.infoSection}>
           <Text style={styles.sectionTitle}>알레르기</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.infoValue}>{userInfo.allergies}</Text>
+            {userInfo.allergies && userInfo.allergies.length > 0 ? (
+              <Text style={styles.infoValue}>{userInfo.allergies}</Text>
+            ) : (
+              <Text style={styles.noDiseaseText}>등록된 알레르기가 없습니다.</Text>
+            )}
           </View>
         </View>
       </ScrollView>

@@ -20,9 +20,7 @@ type SettingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList,
 
 const SettingScreen = () => {
   const navigation = useNavigation<SettingScreenNavigationProp>();
-  const [breakfastTime, setBreakfastTime] = useState('');
-  const [lunchTime, setLunchTime] = useState('');
-  const [dinnerTime, setDinnerTime] = useState('');
+  const [time, setTime] = useState('');
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
 
   useEffect(() => {
@@ -36,9 +34,7 @@ const SettingScreen = () => {
         }
       });
       const data = await response.json();
-      setBreakfastTime(data.morning);
-      setLunchTime(data.afternoon);
-      setDinnerTime(data.evening); 
+      setTime(data.reset_time);
     }
     initUserInfo();
   }, []);
@@ -98,9 +94,7 @@ const SettingScreen = () => {
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        morning: breakfastTime,
-        afternoon: lunchTime,
-        evening: dinnerTime,
+        reset_time: time,
       })
     });
     if (!response.ok) {
@@ -133,27 +127,11 @@ const SettingScreen = () => {
         <View style={styles.section}>
           <Text style={styles.subTitle}>갱신 시간 설정</Text>
           <View style={styles.timeContainer}>
-            <Text style={styles.label}>아침 식단 갱신 시간</Text>
+            <Text style={styles.label}>하루 식단 갱신 시간</Text>
             <TextInput
               style={styles.timeInput}
-              value={breakfastTime}
-              onChangeText={setBreakfastTime}
-            />
-          </View>
-          <View style={styles.timeContainer}>
-            <Text style={styles.label}>점심 식단 갱신 시간</Text>
-            <TextInput
-              style={styles.timeInput}
-              value={lunchTime}
-              onChangeText={setLunchTime}
-            />
-          </View>
-          <View style={styles.timeContainer}>
-            <Text style={styles.label}>저녁 식단 갱신 시간</Text>
-            <TextInput
-              style={styles.timeInput}
-              value={dinnerTime}
-              onChangeText={setDinnerTime}
+              value={time}
+              onChangeText={setTime}
             />
           </View>
           <View style={styles.saveButtonContainer}>

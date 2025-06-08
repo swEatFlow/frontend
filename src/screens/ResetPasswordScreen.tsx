@@ -18,7 +18,7 @@ type ResetPasswordScreenNavigationProp = NativeStackNavigationProp<RootStackPara
 
 const ResetPasswordScreen = () => {
   const navigation = useNavigation<ResetPasswordScreenNavigationProp>();
-  const [id, setId] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -47,7 +47,7 @@ const ResetPasswordScreen = () => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ email: email, id: id })
+      body: JSON.stringify({ email: email, username: username })
     });
     if (response.ok) {
       setStep(2);
@@ -93,7 +93,7 @@ const ResetPasswordScreen = () => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ email: email, id: id, new_password: newPassword })
+      body: JSON.stringify({ email: email, username: username, new_password: newPassword })
     });
     if (response.ok) {
       setShowResult(true);
@@ -130,8 +130,8 @@ const ResetPasswordScreen = () => {
                     <TextInput
                       style={styles.input}
                       placeholder="아이디를 입력해주세요"
-                      value={id}
-                      onChangeText={setId}
+                      value={username}
+                      onChangeText={setUsername}
                       autoCapitalize="none"
                     />
                   </View>
