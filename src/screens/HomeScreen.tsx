@@ -354,25 +354,7 @@ export const HomeScreen = () => {
             />
           ))}
         </View>
-
-        {/* Meal Input Buttons */}
-        <View style={styles.mealInputButtons}>
-          {['아침', '점심', '저녁'].map((mealType) => (
-            <TouchableOpacity
-              key={mealType}
-              style={styles.mealInputButton}
-              onPress={() => {
-                setSelectedMealType(mealType);
-                setMealInput(prev => ({ ...prev, meal: mealType }));
-                setShowMealInput(true);
-              }}
-            >
-              <Text style={styles.mealInputButtonText}>{mealType} 식사 입력</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
       </ScrollView>
-      <MealInputModal />
     </SafeAreaView>
   );
 };

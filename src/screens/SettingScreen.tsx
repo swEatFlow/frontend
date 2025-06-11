@@ -15,6 +15,7 @@ import { RootStackParamList } from '../utils/navigator';
 import Header from '../components/header';
 import { getItem, removeItem } from '../store/useStore';
 import AccountInfoModal from '../components/AccountInfoModal';
+import { getUserInfo } from '../api/userInfo';
 
 type SettingScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Setting'>;
 
@@ -24,19 +25,7 @@ const SettingScreen = () => {
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false);
 
   useEffect(() => {
-    const initUserInfo = async () => {
-      const token = await getItem('token');
-      const response = await fetch("http://10.0.2.2:8000/api/v1/users/set-time", {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      setTime(data.reset_time);
-    }
-    initUserInfo();
+    getUserInfo().then(setTime);
   }, []);
 
   React.useLayoutEffect(() => {
